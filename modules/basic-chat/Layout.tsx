@@ -1,0 +1,25 @@
+import type { ReactNode } from "react";
+import { StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+interface LayoutProps {
+  children: ReactNode;
+}
+
+/**
+ * Layout for the basic-chat experiment.
+ * Add experiment-specific providers here if needed.
+ */
+export function Layout({ children }: LayoutProps) {
+  const { top } = useSafeAreaInsets();
+
+  return <View style={[styles.container, { paddingTop: top }]}>{children}</View>;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+});
+
