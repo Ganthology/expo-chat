@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlankSizeProvider } from './BlankSizeProvider';
+import { MessageListProvider } from './MessageListProvider';
 
 interface LayoutProps {
   children: ReactNode;
@@ -16,7 +17,9 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <BlankSizeProvider>
-      <View style={[styles.container, { paddingTop: top }]}>{children}</View>
+      <MessageListProvider>
+        <View style={[styles.container, { paddingTop: top }]}>{children}</View>
+      </MessageListProvider>
     </BlankSizeProvider>
   );
 }

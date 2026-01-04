@@ -1,41 +1,48 @@
-import { LegendList, LegendListRef } from '@legendapp/list';
-import { use, useCallback, useRef, useState } from 'react';
+import { LegendList } from '@legendapp/list';
+import { use, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Reanimated, { useAnimatedStyle } from 'react-native-reanimated';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
+import Reanimated, { useAnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { INITIAL_MESSAGES } from '../experiments/messages';
 import { Message } from '../experiments/types';
 import { BlankSizeContext } from './BlankSizeProvider';
 import { ChatInputWithMeasure } from './ChatInputWithMeasure';
 import { MessageBubbleWithMeasure } from './MessageBubbleWithMeasure';
+import { useMessageList } from './MessageListProvider';
+
+const AnimatedLegendList = Reanimated.createAnimatedComponent(LegendList<Message>);
 
 export function Screen() {
-  const listRef = useRef<LegendListRef>(null);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
-
-  // const blankSizeSV = useSharedValue(0);
-
+  const { listRef, scrollToEndWithOffset } = useMessageList();
   const { blankSizeSV, composerHeightSV } = use(BlankSizeContext);
 
-  const blankSizeStyle = useAnimatedStyle(() => ({
-    height: blankSizeSV?.value ?? 0,
-  }));
+  const animatedProps = useAnimatedProps(() => {
+    return {
+      contentInset: {
+        // bottom: blankSizeSV?.value ?? 0,
+        bottom: 0,
+      },
+    };
+  });
 
-  const composerHeightStyle = useAnimatedStyle(() => ({
-    height: composerHeightSV?.value ?? 0,
-  }));
-
-  const handleSend = useCallback((content: string) => {
+  const handleSend = (content: string) => {
+    const messageId = Date.now().toString();
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: messageId,
       content,
       role: 'user',
       timestamp: new Date(),
     };
+
     setMessages((prev) => [...prev, userMessage]);
 
+    // Scroll after React renders and layout completes
+    // scrollToEndWithOffset();
     setTimeout(() => {
-      listRef.current?.scrollToEnd({ animated: true });
+      console.log('scroll triggered', -(blankSizeSV?.value ?? 0));
+      listRef.current?.scrollToEnd({ animated: true, viewOffset: -(blankSizeSV?.value ?? 0) });
     }, 0);
 
     setTimeout(() => {
@@ -48,33 +55,55 @@ export function Screen() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+
+      // listRef.current?.scrollToEnd({ animated: true, viewOffset: 0 });
     }, 1000);
-  }, []);
+  };
 
   const { bottom } = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingBottom: bottom }]}>
-      <LegendList
+    <View style={[styles.container, { paddingBottom: composerHeightSV?.value ?? 0 }]}>
+      {/* <View> */}
+      <AnimatedLegendList
+        // @ts-expect-error - animatedProps type mismatch with LegendList
+        animatedProps={animatedProps}
         ref={listRef}
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <MessageBubbleWithMeasure message={item} />}
-        ListFooterComponent={
-          () => (
-            <View>
-              <Reanimated.View style={[blankSizeStyle, { backgroundColor: 'blue' }]} />
-              {/* <Reanimated.View style={[composerHeightStyle, { backgroundColor: 'red' }]} /> */}
-            </View>
-          )
-          // <FooterSpacer
-          //   lastUserMessageHeight={lastUserMessageHeight}
-          //   textInputHeight={textInputHeight}
-          // />
-        }
         recycleItems
+        showsVerticalScrollIndicator
+        showsHorizontalScrollIndicator
+        indicatorStyle="white"
+        contentContainerStyle={{
+          backgroundColor: 'green',
+        }}
+        ListFooterComponent={() => (
+          <View style={{ height: blankSizeSV?.value ?? 0, backgroundColor: 'yellow' }} />
+        )}
+        style={{
+          backgroundColor: 'red',
+        }}
+        scrollEnabled
       />
-      <ChatInputWithMeasure onSend={handleSend} />
+      {/* </View> */}
+      <KeyboardStickyView
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingHorizontal: 16,
+          // backgroundColor: 'blue',
+        }}
+        offset={{
+          opened: -8,
+          // closed: -bottom,
+        }}
+      >
+        <ChatInputWithMeasure onSend={handleSend} />
+      </KeyboardStickyView>
     </View>
   );
 }
@@ -82,6 +111,7 @@ export function Screen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // minHeight: '100%',
     backgroundColor: '#000',
     // backgroundColor: "red",
   },

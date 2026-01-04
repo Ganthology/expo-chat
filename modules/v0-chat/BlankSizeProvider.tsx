@@ -32,27 +32,31 @@ export function useMessageBlankSize(message: Message) {
 
   const { top, bottom } = useSafeAreaInsets();
 
-  const availableHeight = windowHeight - top - bottom;
+  const availableHeight = windowHeight - top;
 
   return {
     onLayout: (event: LayoutChangeEvent) => {
       if (message.role === 'user' && blankSizeSV && lastSentUserMessageHeightSV) {
         const userSentMessageHeight = event.nativeEvent.layout.height;
 
-        blankSizeSV.value =
+        const newBlankSize =
           availableHeight - userSentMessageHeight - (composerHeightSV?.value ?? 0);
-
+        blankSizeSV.value = newBlankSize;
+        console.log('user message layout triggered', newBlankSize);
         lastSentUserMessageHeightSV.value = userSentMessageHeight;
       }
 
       if (message.role === 'assistant' && blankSizeSV) {
         const assistantMessageHeight = event.nativeEvent.layout.height;
 
-        blankSizeSV.value =
+        const newBlankSize =
           availableHeight -
           (lastSentUserMessageHeightSV?.value ?? 0) -
           (composerHeightSV?.value ?? 0) -
           assistantMessageHeight;
+        console.log('assistant message layout triggered', newBlankSize);
+
+        blankSizeSV.value = newBlankSize;
       }
     },
     ref: blankSizeRef,

@@ -25,7 +25,7 @@ export function ChatInputWithMeasure({
   const handleSend = () => {
     if (!canSend) return;
     onSend(text.trim());
-    setText('');
+    // setText('');
   };
 
   const animatedButtonStyle = useAnimatedStyle(() => ({
