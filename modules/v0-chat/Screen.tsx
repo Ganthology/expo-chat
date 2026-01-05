@@ -2,9 +2,8 @@ import { LegendList } from '@legendapp/list';
 import { use, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { KeyboardStickyView } from 'react-native-keyboard-controller';
-import Reanimated, { useAnimatedProps } from 'react-native-reanimated';
+import Reanimated, { useAnimatedProps, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { INITIAL_MESSAGES } from '../experiments/messages';
 import { Message } from '../experiments/types';
 import { BlankSizeContext } from './BlankSizeProvider';
 import { ChatInputWithMeasure } from './ChatInputWithMeasure';
@@ -14,7 +13,8 @@ import { useMessageList } from './MessageListProvider';
 const AnimatedLegendList = Reanimated.createAnimatedComponent(LegendList<Message>);
 
 export function Screen() {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  // const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<Message[]>([]);
   const { listRef, scrollToEndWithOffset } = useMessageList();
   const { blankSizeSV, composerHeightSV } = use(BlankSizeContext);
 
@@ -24,6 +24,13 @@ export function Screen() {
         // bottom: blankSizeSV?.value ?? 0,
         bottom: 0,
       },
+    };
+  });
+
+  const blankSizeStyle = useAnimatedStyle(() => {
+    return {
+      height: blankSizeSV?.value ?? 0,
+      backgroundColor: 'yellow',
     };
   });
 
@@ -40,10 +47,9 @@ export function Screen() {
 
     // Scroll after React renders and layout completes
     // scrollToEndWithOffset();
-    setTimeout(() => {
-      console.log('scroll triggered', -(blankSizeSV?.value ?? 0));
-      listRef.current?.scrollToEnd({ animated: true, viewOffset: -(blankSizeSV?.value ?? 0) });
-    }, 0);
+
+    console.log('scroll to end triggered');
+    listRef.current?.scrollToEnd({ animated: true });
 
     setTimeout(() => {
       const assistantMessage: Message = {
@@ -79,9 +85,7 @@ export function Screen() {
         contentContainerStyle={{
           backgroundColor: 'green',
         }}
-        ListFooterComponent={() => (
-          <View style={{ height: blankSizeSV?.value ?? 0, backgroundColor: 'yellow' }} />
-        )}
+        ListFooterComponent={() => <Reanimated.View style={blankSizeStyle} />}
         style={{
           backgroundColor: 'red',
         }}

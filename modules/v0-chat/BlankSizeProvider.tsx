@@ -3,6 +3,7 @@ import { LayoutChangeEvent, useWindowDimensions, View } from 'react-native';
 import { SharedValue, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Message } from '../experiments/types';
+import { useMessageList } from './MessageListProvider';
 
 export const BlankSizeContext = createContext<{
   blankSizeSV: SharedValue<number> | null;
@@ -27,6 +28,7 @@ export function BlankSizeProvider({ children }: { children: React.ReactNode }) {
 export function useMessageBlankSize(message: Message) {
   const blankSizeRef = useRef<View>(null);
   const { blankSizeSV, composerHeightSV, lastSentUserMessageHeightSV } = use(BlankSizeContext);
+  const { listRef } = useMessageList();
 
   const { height: windowHeight } = useWindowDimensions();
 
@@ -44,6 +46,15 @@ export function useMessageBlankSize(message: Message) {
         blankSizeSV.value = newBlankSize;
         console.log('user message layout triggered', newBlankSize);
         lastSentUserMessageHeightSV.value = userSentMessageHeight;
+
+        // setTimeout(() => {
+        //   console.log('scroll triggered', -newBlankSize);
+        //   listRef.current?.scrollToEnd({ animated: true, viewOffset: -newBlankSize });
+        // }, 0);
+
+        // listRef.current?.scrollToEnd({ animated: true });
+        console.log('scroll to end triggered with view offset', -newBlankSize);
+        listRef.current?.scrollToEnd({ animated: true, viewOffset: -newBlankSize });
       }
 
       if (message.role === 'assistant' && blankSizeSV) {
