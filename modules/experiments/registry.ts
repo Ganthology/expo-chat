@@ -1,5 +1,7 @@
 import { Layout as BasicChatLayout } from "@/modules/basic-chat/Layout";
 import { Screen as BasicChatScreen } from "@/modules/basic-chat/Screen";
+import { Layout as V0ChatLayout } from "@/modules/v0-chat/Layout";
+import { Screen as V0ChatScreen } from "@/modules/v0-chat/Screen";
 import type { Experiment } from "./types";
 
 /**
@@ -15,6 +17,15 @@ export const experiments: Experiment[] = [
     tags: ["chat", "flatlist"],
     Screen: BasicChatScreen,
     Layout: BasicChatLayout,
+  },
+  {
+    id: "v0-chat",
+    name: "V0 Chat",
+    description:
+      "Whatsapp like chat experience",
+    tags: ["chat", "flatlist"],
+    Screen: V0ChatScreen,
+    Layout: V0ChatLayout,
   },
 ];
 
